@@ -1,12 +1,15 @@
 <!doctype html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>uiwwsw's tetris</title>
   <style>
-    html, body {
+    html,
+    body {
       width: 100%;
       height: 100%;
       margin: 0;
@@ -32,296 +35,305 @@
     }
   </style>
 </head>
+
 <body>
-<script>
-  (function uiTetris() {
-    var pixel = 25,
-      width = 10,
-      height = 20,
-      speed = 1,
-      index = 0,
-      map,
-      canvas,
-      ctx,
-      player = [],
-      dropSto,
-      colors = [ 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'violet' ],
-      random,
-      shape = {
-        a: [
-          [
-            [ 1, 1, 1 ],
-            [ 0, 0, 1 ],
+  <script>
+    (function uiTetris() {
+      var pixel = 25,
+        width = 10,
+        height = 20,
+        speed = 1,
+        index = 0,
+        map,
+        canvas,
+        ctx,
+        player = [],
+        dropSto,
+        colors = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'violet'],
+        random,
+        shape = {
+          a: [
+            [
+              [1, 1, 1],
+              [0, 0, 1],
+            ],
+            [
+              [0, 1],
+              [0, 1],
+              [1, 1],
+            ],
+            [
+              [1, 0, 0],
+              [1, 1, 1],
+            ],
+            [
+              [1, 0],
+              [1, 0],
+              [1, 1],
+            ],
           ],
-          [
-            [ 0, 1 ],
-            [ 0, 1 ],
-            [ 1, 1 ],
+          b: [
+            [
+              [0, 1, 0],
+              [1, 1, 1],
+            ],
+            [
+              [1, 0],
+              [1, 1],
+              [1, 0],
+            ],
+            [
+              [1, 1, 1],
+              [0, 1, 0],
+            ],
+            [
+              [0, 1],
+              [1, 1],
+              [0, 1],
+            ],
           ],
-          [
-            [ 1, 0, 0 ],
-            [ 1, 1, 1 ],
+          c: [
+            [
+              [1, 1, 1],
+              [1, 0, 0],
+            ],
+            [
+              [1, 1],
+              [0, 1],
+              [0, 1],
+            ],
+            [
+              [0, 0, 1],
+              [1, 1, 1],
+            ],
+            [
+              [1, 0],
+              [1, 0],
+              [1, 1],
+            ],
           ],
-          [
-            [ 1, 0 ],
-            [ 1, 0 ],
-            [ 1, 1 ],
+          d: [
+            [
+              [1, 1, 0],
+              [0, 1, 1],
+            ],
+            [
+              [0, 1],
+              [1, 1],
+              [1, 0],
+            ],
           ],
-        ],
-        b: [
-          [
-            [ 0, 1, 0 ],
-            [ 1, 1, 1 ],
+          e: [
+            [
+              [1, 1],
+              [1, 1],
+            ],
           ],
-          [
-            [ 1, 0 ],
-            [ 1, 1 ],
-            [ 1, 0 ],
+          f: [
+            [
+              [0, 1, 1],
+              [1, 1, 0],
+            ],
+            [
+              [1, 0],
+              [1, 1],
+              [0, 1],
+            ],
           ],
-          [
-            [ 1, 1, 1 ],
-            [ 0, 1, 0 ],
+          g: [
+            [
+              [1, 1, 1, 1],
+            ],
+            [
+              [1],
+              [1],
+              [1],
+              [1],
+            ],
           ],
-          [
-            [ 0, 1 ],
-            [ 1, 1 ],
-            [ 0, 1 ],
-          ],
-        ],
-        c: [
-          [
-            [ 1, 1, 1 ],
-            [ 1, 0, 0 ],
-          ],
-          [
-            [ 1, 1 ],
-            [ 0, 1 ],
-            [ 0, 1 ],
-          ],
-          [
-            [ 0, 0, 1 ],
-            [ 1, 1, 1 ],
-          ],
-          [
-            [ 1, 0 ],
-            [ 1, 0 ],
-            [ 1, 1 ],
-          ],
-        ],
-        d: [
-          [
-            [ 1, 1, 0 ],
-            [ 0, 1, 1 ],
-          ],
-          [
-            [ 0, 1 ],
-            [ 1, 1 ],
-            [ 1, 0 ],
-          ],
-        ],
-        e: [
-          [
-            [ 1, 1 ],
-            [ 1, 1 ],
-          ],
-        ],
-        f: [
-          [
-            [ 0, 1, 1 ],
-            [ 1, 1, 0 ],
-          ],
-          [
-            [ 1, 0 ],
-            [ 1, 1 ],
-            [ 0, 1 ],
-          ],
-        ],
-        g: [
-          [
-            [ 1, 1, 1, 1 ],
-          ],
-          [
-            [ 1 ],
-            [ 1 ],
-            [ 1 ],
-            [ 1 ],
-          ],
-        ],
+        };
+
+      var arrayGroup;
+      var array;
+      window.onload = function () {
+        canvas = document.getElementById('canvas');
+        ctx = canvas.getContext('2d');
+        canvas.setAttribute('width', width * pixel);
+        canvas.setAttribute('height', height * pixel);
+        tetris();
       };
 
-    var arrayGroup;
-    var array;
-    window.onload = function() {
-      canvas = document.getElementById('canvas');
-      ctx = canvas.getContext('2d');
-      canvas.setAttribute('width', width * pixel);
-      canvas.setAttribute('height', height * pixel);
-      tetris();
-    };
-
-    window.addEventListener('keypress', function(event) {
-      switch (event.key) {
-        case 'a':
-          (canMove('l')) && (player[ 0 ].left += 1);
-          break;
-        case 'w':
-          //(canMove('u')) && (player[ 0 ].up += 1);
-          break;
-        case 'd':
-          (canMove('r')) && (player[ 0 ].right += 1);
-          break;
-        case 's':
-          (canMove('b')) && (player[ 0 ].bottom += 1);
-          break;
-        case 'e': //e
-          player[ 0 ].rotate++;
-          if (player[ 0 ].rotate >= arrayGroup.length) {
-            player[ 0 ].rotate = 0;
-          }
-          array = arrayGroup[ player[ 0 ].rotate ];
-          break;
-        case 'q': //q
-          player[ 0 ].rotate--;
-          if (player[ 0 ].rotate < 0) {
-            player[ 0 ].rotate = arrayGroup.length - 1;
-          }
-          array = arrayGroup[ player[ 0 ].rotate ];
-          break;
-      }
-      moveShape();
-      // left 97
-      // up 119
-      // right 100
-      // bottom 115
-    });
-
-    function tetris() {
-      makePlayGround();
-      newGame();
-    }
-
-    function newGame() {
-      map = [];
-      for (var i = 0; i < height; i++) {
-        var _row = [];
-        for (var j = 0; j < width; j++) {
-          _row.push(0);
+      window.addEventListener('keypress', function (event) {
+        switch (event.key) {
+          case 'a':
+            (canMove('l')) && (player[0].left += 1);
+            break;
+          case 'w':
+            //(canMove('u')) && (player[ 0 ].up += 1);
+            break;
+          case 'd':
+            (canMove('r')) && (player[0].right += 1);
+            break;
+          case 's':
+            (canMove('b')) && (player[0].bottom += 1);
+            break;
+          case 'e': //e
+            player[0].rotate++;
+            if (player[0].rotate >= arrayGroup.length) {
+              player[0].rotate = 0;
+            }
+            array = arrayGroup[player[0].rotate];
+            break;
+          case 'q': //q
+            player[0].rotate--;
+            if (player[0].rotate < 0) {
+              player[0].rotate = arrayGroup.length - 1;
+            }
+            array = arrayGroup[player[0].rotate];
+            break;
         }
-        map.push(_row);
+        // console.log(event.keyCode);
+        moveShape();
+        // left 97
+        // up 119
+        // right 100
+        // bottom 115
+      });
+
+      function tetris() {
+        makePlayGround();
+        newGame();
       }
-      makeShape();
-    }
 
-    function setMap() {
-      ctx.beginPath();
-      ctx.rect(0, 0, width * pixel, height * pixel);
-      ctx.fillStyle = '#000';
-      ctx.fill();
-    }
+      function newGame() {
+        map = [];
+        for (var i = 0; i < height; i++) {
+          var _row = [];
+          for (var j = 0; j < width; j++) {
+            _row.push(0);
+          }
+          map.push(_row);
+        }
+        makeShape();
+      }
 
-    function moveShape() {
-      setMap();
-      ctx.beginPath();
-      for (var i = 0; i < array.length; i++) {
-        for (var j = 0; j < array[ i ].length; j++) {
-          if (array[ i ][ j ] === 1) {
-            ctx.rect((initPosition(array[ i ].length) + j + player[ 0 ].right - player[ 0 ].left) * pixel, (i + index - 1) * pixel, pixel, pixel);
+      function setMap() {
+        ctx.beginPath();
+        ctx.rect(0, 0, width * pixel, height * pixel);
+        ctx.fillStyle = '#000';
+        ctx.fill();
+      }
+
+      function moveShape() {
+        setMap();
+        ctx.beginPath();
+        for (var i = 0; i < array.length; i++) {
+          for (var j = 0; j < array[i].length; j++) {
+            if (array[i][j] === 1) {
+              ctx.rect((initPosition(array[i].length) + j + player[0].right - player[0].left) * pixel, (i + index) * pixel, pixel, pixel);
+            }
           }
         }
+
+        ctx.fillStyle = colors[random];
+        ctx.fill();
       }
 
-      ctx.fillStyle = colors[ random ];
-      ctx.fill();
-    }
-
-    function dropShape() {
-      setMap();
-      ctx.beginPath();
-      for (var i = 0; i < array.length; i++) {
-        for (var j = 0; j < array[ i ].length; j++) {
-          if (array[ i ][ j ] === 1) {
-            ctx.rect((initPosition(array[ i ].length) + j + player[ 0 ].right - player[ 0 ].left) * pixel, (i + index) * pixel, pixel, pixel);
+      function dropShape() {
+        setMap();
+        ctx.beginPath();
+        for (var i = 0; i < array.length; i++) {
+          for (var j = 0; j < array[i].length; j++) {
+            if (array[i][j] === 1) {
+              ctx.rect((initPosition(array[i].length) + j + player[0].right - player[0].left) * pixel, (i + index) * pixel, pixel, pixel);
+            }
           }
         }
+
+        ctx.fillStyle = colors[random];
+        ctx.fill();
       }
 
-      ctx.fillStyle = colors[ random ];
-      ctx.fill();
-    }
-
-    function intervalShape() {
-      ++index;
-      dropSto = setTimeout(function() {
+      function intervalShape() {
+        ++index;
         dropShape();
-        if (canMove()) {
-          intervalShape();
-        } else {
-          architect(array, random);
-          makeShape();
-        }
-      }, 1000 - Math.pow(speed, 2));
-    }
-
-    function initPosition(width) {
-      return Math.floor(5 - width / 2);
-    }
-
-    function canMove(arrow) {
-      var horizon = 0;
-      var vertical = 0;
-      switch (arrow) {
-        case 'u':
-          break;
-        case 'r':
-          horizon++;
-          break;
-        case 'b':
-          vertical++;
-          break;
-        case 'l':
-          horizon--;
-          break;
+        dropSto = setTimeout(function () {
+          if (canMove()) {
+            intervalShape();
+          } else {
+            architect(array, random);
+            makeShape();
+          }
+        }, 100 - Math.pow(speed, 2));
       }
-      var horizonResult = initPosition(array[ 0 ].length) + array[ 0 ].length + player[ 0 ].right - player[ 0 ].left + horizon;
-      var verticalResult = array.length + index;
-      return horizonResult >= array[ 0 ].length && horizonResult <= 10 && verticalResult < 20;
-    }
 
-    function makeShape() {
-      index = -1;
-      random = Math.floor(Math.random() * 7 + 1) - 1;
-      player[ 0 ].up = 0;
-      player[ 0 ].right = 0;
-      player[ 0 ].bottom = 0;
-      player[ 0 ].left = 0;
-      player[ 0 ].rotate = 0;
-      console.log(random, player[ 0 ].rotate);
-      arrayGroup = Object.values(shape)[ random ];
-      array = arrayGroup[ player[ 0 ].rotate ];
+      function nowPosition(right) {
+        return initPosition(array[0].length) + (right ? array[0].length : 0) + player[0].right - player[0].left;
+      }
 
-      clearTimeout(dropSto);
-      intervalShape();
-    }
+      function initPosition(width) {
+        return Math.floor(5 - width / 2);
+      }
 
-    function architect(array, color) {
+      function canMove(arrow) {
+        var horizon = 0;
+        var vertical = 0;
+        switch (arrow) {
+          case 'u':
+            break;
+          case 'r':
+            vertical--;
+            horizon++;
+            break;
+          case 'b':
+            vertical++;
+            break;
+          case 'l':
+            vertical--;
+            horizon--;
+            break;
+        }
+        var horizonResult = nowPosition(true) + horizon;
+        var verticalResult = array.length + index + vertical;
+        return horizonResult >= array[0].length && horizonResult <= 10 && verticalResult < 20;
+      }
 
-    }
+      function makeShape() {
+        index = -1;
+        random = Math.floor(Math.random() * 7 + 1) - 1;
+        player[0].up = 0;
+        player[0].right = 0;
+        player[0].bottom = 0;
+        player[0].left = 0;
+        player[0].rotate = 0;
+        arrayGroup = Object.values(shape)[random];
+        array = arrayGroup[player[0].rotate];
 
-    function update() {
-      clearTimeout(dropSto);
-      makeShape();
-    }
+        dropShape();
+        clearTimeout(dropSto);
+        intervalShape();
+      }
 
-    function returnDefaultInfo() {
-      return { score: 0, level: 0, horizon: 0, vertical: 0 };
-    }
+      function architect(array, random) {
+        console.log(array, colors[random], nowPosition(), index);
+      }
 
-    function makePlayGround() {
-      player.push(returnDefaultInfo());
-    }
-  }());
+      function update() {
+        clearTimeout(dropSto);
+        makeShape();
+      }
 
-</script>
-<canvas id="canvas"></canvas>
+      function returnDefaultInfo() {
+        return { score: 0, level: 0, horizon: 0, vertical: 0 };
+      }
+
+      function makePlayGround() {
+        player.push(returnDefaultInfo());
+      }
+    }());
+
+  </script>
+  <canvas id="canvas"></canvas>
 </body>
+
 </html>
