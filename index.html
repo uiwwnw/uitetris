@@ -175,7 +175,7 @@
             (canMove('r')) && (player[0].right += 1);
             break;
           case 's':
-            (canMove('b')) && (player[0].bottom += 1);
+            (canMove('b')) && (index += 1);
             break;
           case 'e': //e
             player[0].rotate++;
@@ -183,6 +183,12 @@
               player[0].rotate = 0;
             }
             array = arrayGroup[player[0].rotate];
+            if (horizonPosition() < 0) {
+              player[0].right += 1
+            }
+            if (verticalPosition() >= 20) {
+              index -= 1
+            }
             break;
           case 'q': //q
             player[0].rotate--;
@@ -190,6 +196,12 @@
               player[0].rotate = arrayGroup.length - 1;
             }
             array = arrayGroup[player[0].rotate];
+            if (horizonPosition() < 0) {
+              player[0].right += 1
+            }
+            if (verticalPosition() >= 20) {
+              index -= 1
+            }
             break;
         }
         // console.log(event.keyCode);
@@ -222,6 +234,18 @@
         ctx.rect(0, 0, width * pixel, height * pixel);
         ctx.fillStyle = '#000';
         ctx.fill();
+        for (var i = 0; i < map.length; i++) {
+          for (var j = 0; j < map[i].length; j++) {
+            var color = map[i][j];
+            if (color !== 0) {
+              ctx.beginPath();
+
+              ctx.rect(j * pixel, i * pixel, pixel, pixel);
+              ctx.fillStyle = color;
+              ctx.fill();
+            }
+          }
+        }
       }
 
       function moveShape() {
@@ -230,7 +254,7 @@
         for (var i = 0; i < array.length; i++) {
           for (var j = 0; j < array[i].length; j++) {
             if (array[i][j] === 1) {
-              ctx.rect((initPosition(array[i].length) + j + player[0].right - player[0].left) * pixel, (i + index) * pixel, pixel, pixel);
+              ctx.rect((startPosition(array[i].length) + j + player[0].right - player[0].left) * pixel, (i + index) * pixel, pixel, pixel);
             }
           }
         }
@@ -245,7 +269,7 @@
         for (var i = 0; i < array.length; i++) {
           for (var j = 0; j < array[i].length; j++) {
             if (array[i][j] === 1) {
-              ctx.rect((initPosition(array[i].length) + j + player[0].right - player[0].left) * pixel, (i + index) * pixel, pixel, pixel);
+              ctx.rect((startPosition(array[i].length) + j + player[0].right - player[0].left) * pixel, (i + index) * pixel, pixel, pixel);
             }
           }
         }
@@ -253,6 +277,8 @@
         ctx.fillStyle = colors[random];
         ctx.fill();
       }
+
+
 
       function intervalShape() {
         ++index;
@@ -264,14 +290,17 @@
             architect(array, random);
             makeShape();
           }
-        }, 100 - Math.pow(speed, 2));
+        }, 1000 - Math.pow(speed, 2));
       }
 
-      function nowPosition(right) {
-        return initPosition(array[0].length) + (right ? array[0].length : 0) + player[0].right - player[0].left;
+      function verticalPosition() {
+        return array.length + index;
+      }
+      function horizonPosition(right) {
+        return startPosition(array[0].length) + (right ? array[0].length : 0) + player[0].right - player[0].left;
       }
 
-      function initPosition(width) {
+      function startPosition(width) {
         return Math.floor(5 - width / 2);
       }
 
@@ -293,8 +322,8 @@
             horizon--;
             break;
         }
-        var horizonResult = nowPosition(true) + horizon;
-        var verticalResult = array.length + index + vertical;
+        var horizonResult = horizonPosition(true) + horizon;
+        var verticalResult = verticalPosition() + vertical;
         return horizonResult >= array[0].length && horizonResult <= 10 && verticalResult < 20;
       }
 
@@ -315,7 +344,14 @@
       }
 
       function architect(array, random) {
-        console.log(array, colors[random], nowPosition(), index);
+        var color = colors[random];
+        for (var i = 0; i < array.length; i++) {
+          for (var j = 0; j < array[i].length; j++) {
+            if (array[i][j] === 1) {
+              map[index + i].splice((j + horizonPosition()), 1, color);
+            }
+          }
+        }
       }
 
       function update() {
