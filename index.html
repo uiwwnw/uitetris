@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="ko">
 
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>uiwwsw's tetris</title>
+
   <style>
-    html,
-    body {
+    html, body {
       width: 100%;
       height: 100%;
       margin: 0;
@@ -28,353 +28,456 @@
       content: '';
     }
 
-    #canvas {
-      display: inline-block;
+    canvas {
+      display: none;
       vertical-align: middle;
       border: 1px solid #fff;
     }
+
+    canvas[width] {
+      display: inline-block;
+    }
+
+    canvas + canvas {
+      margin-left: 100px;
+    }
   </style>
 </head>
-
 <body>
-  <script>
-    (function uiTetris() {
-      var pixel = 25,
-        width = 10,
-        height = 20,
-        speed = 1,
-        index = 0,
-        map,
-        canvas,
-        ctx,
-        player = [],
-        dropSto,
-        colors = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'violet'],
-        random,
-        shape = {
-          a: [
-            [
-              [1, 1, 1],
-              [0, 0, 1],
-            ],
-            [
-              [0, 1],
-              [0, 1],
-              [1, 1],
-            ],
-            [
-              [1, 0, 0],
-              [1, 1, 1],
-            ],
-            [
-              [1, 0],
-              [1, 0],
-              [1, 1],
-            ],
+<script>
+  (function uiTetris() {
+    var pixel = 25,
+      width = 10,
+      height = 20,
+      player = [],
+      colors = [ 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'violet' ],
+      shape = {
+        a: [
+          [
+            [ 1, 1, 1 ],
+            [ 0, 0, 1 ],
           ],
-          b: [
-            [
-              [0, 1, 0],
-              [1, 1, 1],
-            ],
-            [
-              [1, 0],
-              [1, 1],
-              [1, 0],
-            ],
-            [
-              [1, 1, 1],
-              [0, 1, 0],
-            ],
-            [
-              [0, 1],
-              [1, 1],
-              [0, 1],
-            ],
+          [
+            [ 0, 1 ],
+            [ 0, 1 ],
+            [ 1, 1 ],
           ],
-          c: [
-            [
-              [1, 1, 1],
-              [1, 0, 0],
-            ],
-            [
-              [1, 1],
-              [0, 1],
-              [0, 1],
-            ],
-            [
-              [0, 0, 1],
-              [1, 1, 1],
-            ],
-            [
-              [1, 0],
-              [1, 0],
-              [1, 1],
-            ],
+          [
+            [ 1, 0, 0 ],
+            [ 1, 1, 1 ],
           ],
-          d: [
-            [
-              [1, 1, 0],
-              [0, 1, 1],
-            ],
-            [
-              [0, 1],
-              [1, 1],
-              [1, 0],
-            ],
+          [
+            [ 1, 1 ],
+            [ 1, 0 ],
+            [ 1, 0 ],
           ],
-          e: [
-            [
-              [1, 1],
-              [1, 1],
-            ],
+        ],
+        b: [
+          [
+            [ 0, 1, 0 ],
+            [ 1, 1, 1 ],
           ],
-          f: [
-            [
-              [0, 1, 1],
-              [1, 1, 0],
-            ],
-            [
-              [1, 0],
-              [1, 1],
-              [0, 1],
-            ],
+          [
+            [ 1, 0 ],
+            [ 1, 1 ],
+            [ 1, 0 ],
           ],
-          g: [
-            [
-              [1, 1, 1, 1],
-            ],
-            [
-              [1],
-              [1],
-              [1],
-              [1],
-            ],
+          [
+            [ 1, 1, 1 ],
+            [ 0, 1, 0 ],
           ],
-        };
-
-      var arrayGroup;
-      var array;
-      window.onload = function () {
-        canvas = document.getElementById('canvas');
-        ctx = canvas.getContext('2d');
-        canvas.setAttribute('width', width * pixel);
-        canvas.setAttribute('height', height * pixel);
-        tetris();
+          [
+            [ 0, 1 ],
+            [ 1, 1 ],
+            [ 0, 1 ],
+          ],
+        ],
+        c: [
+          [
+            [ 1, 1, 1 ],
+            [ 1, 0, 0 ],
+          ],
+          [
+            [ 1, 1 ],
+            [ 0, 1 ],
+            [ 0, 1 ],
+          ],
+          [
+            [ 0, 0, 1 ],
+            [ 1, 1, 1 ],
+          ],
+          [
+            [ 1, 0 ],
+            [ 1, 0 ],
+            [ 1, 1 ],
+          ],
+        ],
+        d: [
+          [
+            [ 1, 1, 0 ],
+            [ 0, 1, 1 ],
+          ],
+          [
+            [ 0, 1 ],
+            [ 1, 1 ],
+            [ 1, 0 ],
+          ],
+        ],
+        e: [
+          [
+            [ 1, 1 ],
+            [ 1, 1 ],
+          ],
+        ],
+        f: [
+          [
+            [ 0, 1, 1 ],
+            [ 1, 1, 0 ],
+          ],
+          [
+            [ 1, 0 ],
+            [ 1, 1 ],
+            [ 0, 1 ],
+          ],
+        ],
+        g: [
+          [
+            [ 1, 1, 1, 1 ],
+          ],
+          [
+            [ 1 ],
+            [ 1 ],
+            [ 1 ],
+            [ 1 ],
+          ],
+        ],
       };
 
-      window.addEventListener('keypress', function (event) {
-        switch (event.key) {
-          case 'a':
-            (canMove('l')) && (player[0].left += 1);
-            break;
-          case 'w':
-            //(canMove('u')) && (player[ 0 ].up += 1);
-            break;
-          case 'd':
-            (canMove('r')) && (player[0].right += 1);
-            break;
-          case 's':
-            (canMove('b')) && (index += 1);
-            break;
-          case 'e': //e
-            player[0].rotate++;
-            if (player[0].rotate >= arrayGroup.length) {
-              player[0].rotate = 0;
+    window.onload = function() {
+      //tetris(prompt('플레이인원'));
+      tetris(2);
+    };
+
+    function tetris(players) {
+      for (var i = 0; i < players; i++) {
+        makePlayGround();
+        // console.log(player);
+        player[ i ].canvas = document.getElementById('canvas' + Number(i + 1));
+        player[ i ].ctx = player[ i ].canvas.getContext('2d');
+        player[ i ].canvas.setAttribute('width', width * pixel);
+        player[ i ].canvas.setAttribute('height', height * pixel);
+        newGame(player[ i ], 1);
+      }
+
+      window.addEventListener('keypress', function(event) {
+        var commonTurn = function(player) {
+          if (player.rotate >= player.arrayGroup.length) {
+            player.rotate = 0;
+          }
+          if (player.rotate < 0) {
+            player.rotate = player.arrayGroup.length - 1;
+          }
+          player.array = player.arrayGroup[ player.rotate ];
+          while (isRotate(player) !== true) {
+            switch (isRotate(player)) {
+              case 'right':
+                player.horizon -= 1;
+                break;
+              case 'left':
+                player.horizon += 1;
+                break;
+              case 'bottom':
+                player.vertical -= 1;
+                break;
             }
-            array = arrayGroup[player[0].rotate];
-            while (horizonPosition() < 0) {
-              player[0].right += 1
-            }
-            while (horizonPosition(true) > 10) {
-              player[0].left += 1
-            }
-            while (verticalPosition() > 20) {
-              index -= 1
-            }
-            break;
-          case 'q': //q
-            player[0].rotate--;
-            if (player[0].rotate < 0) {
-              player[0].rotate = arrayGroup.length - 1;
-            }
-            array = arrayGroup[player[0].rotate];
-            while (horizonPosition() < 0) {
-              player[0].right += 1
-            }
-            while (horizonPosition(true) > 10) {
-              player[0].left += 1
-            }
-            while (verticalPosition() > 20) {
-              index -= 1
-            }
-            break;
+          }
+        };
+        var player1 = function() {
+          //wdsa
+          switch (event.key) {
+            //case 'w':
+            //  player[0].horizon -= 1;
+            //  break;
+            case 'd':
+              if (isWall(player[ 0 ], true)) {
+                player[ 0 ].horizon += 1;
+              }
+              break;
+            case 's':
+              if (isFloor(player[ 0 ])) {
+                player[ 0 ].vertical += 1;
+              }
+              break;
+            case 'a':
+              if (isWall(player[ 0 ], false)) {
+                player[ 0 ].horizon -= 1;
+              }
+              break;
+            case 'e': // turn right
+              player[ 0 ].rotate += 1;
+              commonTurn(player[ 0 ]);
+              break;
+            case 'q': // turn left
+              player[ 0 ].rotate -= 1;
+              commonTurn(player[ 0 ]);
+              break;
+          }
+          moveShape(player[ 0 ]);
+        };
+        var player2 = function() {
+          //8654
+          switch (event.key) {
+            //case '8':
+            //  player[1].horizon -= 1;
+            //  break;
+            case '6':
+              if (isWall(player[ 1 ], true)) {
+                player[ 1 ].horizon += 1;
+              }
+              break;
+            case '5':
+              if (isFloor(player[ 1 ])) {
+                player[ 1 ].vertical += 1;
+              }
+              break;
+            case '4':
+              if (isWall(player[ 1 ], false)) {
+                player[ 1 ].horizon -= 1;
+              }
+              break;
+            case '9': // turn right
+              player[ 1 ].rotate += 1;
+              commonTurn(player[ 1 ]);
+              break;
+            case '7': // turn left
+              player[ 1 ].rotate -= 1;
+              commonTurn(player[ 1 ]);
+              break;
+          }
+          moveShape(player[ 1 ]);
+        };
+        if (players === 1) {
+          player1();
+        } else {
+          player1();
+          player2();
         }
-        // console.log(event.keyCode);
-        moveShape();
+
         // left 97
         // up 119
         // right 100
         // bottom 115
       });
+    }
 
-      function tetris() {
-        makePlayGround();
-        newGame();
-      }
-
-      function newGame() {
-        map = [];
-        for (var i = 0; i < height; i++) {
-          var _row = [];
-          for (var j = 0; j < width; j++) {
-            _row.push(0);
-          }
-          map.push(_row);
+    function newGame(player, level) {
+      player.map = [];
+      player.level = level;
+      for (var i = 0; i < height; i++) {
+        var _row = [];
+        for (var j = 0; j < width; j++) {
+          _row.push(0);
         }
-        makeShape();
+        player.map.push(_row);
       }
+      makeShape(player);
+    }
 
-      function setMap() {
-        // ctx.beginPath();
-        // ctx.rect(0, 0, width * pixel, height * pixel);
-        // ctx.fillStyle = '#000';
-        // ctx.fill();
-        for (var i = 0; i < map.length; i++) {
-          for (var j = 0; j < map[i].length; j++) {
-            var color = map[i][j] ? map[i][j] : '#000';
-            ctx.beginPath();
-            ctx.rect(j * pixel, i * pixel, pixel, pixel);
-            if (color !== 0) {
-              ctx.fillStyle = color;
-              ctx.fill();
-            }
+    function setMap(player) {
+      for (var i = 0; i < player.map.length; i++) {
+        for (var j = 0; j < player.map[ i ].length; j++) {
+          var color = player.map[ i ][ j ] ? player.map[ i ][ j ] : '#000';
+          player.ctx.beginPath();
+          player.ctx.rect(j * pixel, i * pixel, pixel, pixel);
+          if (color !== 0) {
+            player.ctx.fillStyle = color;
+            player.ctx.fill();
+            displayPlayerInfo(player);
           }
         }
       }
+    }
 
-      function moveShape() {
-        setMap();
-        ctx.beginPath();
-        for (var i = 0; i < array.length; i++) {
-          for (var j = 0; j < array[i].length; j++) {
-            if (array[i][j] === 1) {
-              ctx.rect((startPosition(array[i].length) + j + player[0].right - player[0].left) * pixel, (i + index) * pixel, pixel, pixel);
-            }
-          }
-        }
-
-        ctx.fillStyle = colors[random];
-        ctx.fill();
-      }
-
-      function dropShape() {
-        setMap();
-        ctx.beginPath();
-        for (var i = 0; i < array.length; i++) {
-          for (var j = 0; j < array[i].length; j++) {
-            if (array[i][j] === 1) {
-              ctx.rect((startPosition(array[i].length) + j + player[0].right - player[0].left) * pixel, (i + index) * pixel, pixel, pixel);
-            }
-          }
-        }
-
-        ctx.fillStyle = colors[random];
-        ctx.fill();
-      }
-
-
-
-      function intervalShape() {
-        ++index;
-        dropShape();
-        dropSto = setTimeout(function () {
-          if (canMove()) {
-            intervalShape();
-          } else {
-            architect(array, random);
-            makeShape();
-          }
-        }, 1000 - Math.pow(speed, 2));
-      }
-
-      function verticalPosition() {
-        return array.length + index;
-      }
-      function horizonPosition(right) {
-        return startPosition(array[0].length) + (right ? array[0].length : 0) + player[0].right - player[0].left;
-      }
-
-      function startPosition(width) {
-        return Math.floor(5 - width / 2);
-      }
-
-      function canMove(arrow) {
-        var horizon = 0;
-        var vertical = 0;
-        switch (arrow) {
-          case 'u':
-            break;
-          case 'r':
-            vertical--;
-            horizon++;
-            break;
-          case 'b':
-            // vertical++;
-            break;
-          case 'l':
-            vertical--;
-            horizon--;
-            break;
-        }
-        var horizonResult = horizonPosition(true) + horizon;
-        var verticalResult = verticalPosition() + vertical;
-        return horizonResult >= array[0].length && horizonResult <= 10 && verticalResult < 20;
-      }
-
-      function makeShape() {
-        index = -1;
-        random = Math.floor(Math.random() * 7 + 1) - 1;
-        player[0].up = 0;
-        player[0].right = 0;
-        player[0].bottom = 0;
-        player[0].left = 0;
-        player[0].rotate = 0;
-        arrayGroup = Object.values(shape)[random];
-        array = arrayGroup[player[0].rotate];
-
-        dropShape();
-        clearTimeout(dropSto);
-        intervalShape();
-      }
-
-      function architect(array, random) {
-        var color = colors[random];
-        for (var i = 0; i < array.length; i++) {
-          for (var j = 0; j < array[i].length; j++) {
-            if (array[i][j] === 1) {
-              map[index + i].splice((j + horizonPosition()), 1, color);
-            }
+    function moveShape(player) {
+      setMap(player);
+      player.ctx.beginPath();
+      for (var i = 0; i < player.array.length; i++) {
+        for (var j = 0; j < player.array[ i ].length; j++) {
+          if (player.array[ i ][ j ] === 1) {
+            player.ctx.rect((j + player.horizon) * pixel, (i + player.vertical) * pixel, pixel, pixel);
           }
         }
       }
 
-      function update() {
-        clearTimeout(dropSto);
-        makeShape();
+      player.ctx.fillStyle = colors[ player.random ];
+      player.ctx.fill();
+    }
+
+    function intervalShape(player) {
+      player.vertical++;
+      moveShape(player);
+      player.dropSto = setTimeout(function() {
+        if (isFloor(player)) {
+          intervalShape(player);
+        } else {
+          architect(player);
+          makeShape(player);
+        }
+      }, 1000 - Math.pow(player.level, 2));
+    }
+
+    function isFloor(player) {
+      var result = [];
+      var row = Number(player.array.length);
+      if (player.vertical + row >= height) {
+        return false;
       }
 
-      function returnDefaultInfo() {
-        return { score: 0, level: 0, horizon: 0, vertical: 0 };
+      for (var i = 0; i < player.array[ 0 ].length; i++) {
+        for (var j = 0; j < row; j++) {
+          var color = player.map[ player.vertical + player.array.length - j ][ player.horizon + i ];
+          var check = player.array[ row - j - 1 ][ i ] === 1 ? color : 0;
+          result.push(check);
+        }
       }
+      return result.filter((color) => {return color !== 0;}).length === 0;
+    }
 
-      function makePlayGround() {
-        player.push(returnDefaultInfo());
+    function isWall(player, direct) {
+      var result = [];
+      var col = Number(player.array[ 0 ].length);
+      direct = direct ? 1 : -1;
+      if (direct && player.horizon + direct + col > width) {
+        return false;
       }
-    }());
+      if (!direct && player.horizon + direct < 0) {
+        return false;
+      }
+      for (var i = 0; i < player.array.length; i++) {
+        for (var j = 0; j < col; j++) {
+          var color = player.map[ player.vertical + i ][ player.horizon + j + direct ];
+          var check = player.array[ i ][ j ] === 1 ? color : 0;
+          result.push(check);
+        }
+      }
+      return result.filter((color) => {return color !== 0;}).length === 0;
+    }
 
-  </script>
-  <canvas id="canvas"></canvas>
+    function isRotate(player) {
+      var col = Number(player.array[ 0 ].length);
+      var row = Number(player.array.length);
+      if (player.horizon < 0) {
+        return 'left';
+      }
+      if (player.horizon + col > width) {
+        return 'right';
+      }
+      if (player.vertical + row > height) {
+        return 'bottom';
+      }
+      // for (var i = 0; i < player.array[ 0 ].length; i++) {
+      //   for (var j = 0; j < row; j++) {
+      //     var color = player.map[ player.vertical + player.array.length - j ][ player.horizon + i ];
+      //     var check = player.array[ row - j - 1 ][ i ] === 1 ? color : 0;
+      //     result.push(check);
+      //   }
+      // }
+      return true;
+    }
+
+    function makeShape(player) {
+      player.vertical = -1;
+      player.random = Math.floor(Math.random() * 7 + 1) - 1;
+      player.rotate = 0;
+      player.arrayGroup = Object.values(shape)[ player.random ];
+      player.array = player.arrayGroup[ player.rotate ];
+      player.horizon = (5 - Math.floor(player.array[ 0 ].length / 2));
+
+      moveShape(player);
+      clearTimeout(player.dropSto);
+      intervalShape(player);
+    }
+
+    function architect(player) {
+      var color = colors[ player.random ];
+      for (var i = 0; i < player.array.length; i++) {
+        for (var j = 0; j < player.array[ i ].length; j++) {
+          if (player.array[ i ][ j ] === 1) {
+            player.map[ player.vertical + i ].splice((j + player.horizon), 1, color);
+          }
+        }
+      }
+      isRowFull(player);
+    }
+
+    function displayPlayerInfo(player) {
+      player.ctx.font = '12px Arial';
+      player.ctx.fillStyle = 'rgba(255,255,255,.5)';
+      player.ctx.fillText('level ' + player.level, 5, 15);
+      player.ctx.font = '12px Arial';
+      player.ctx.fillStyle = 'rgba(255,255,255,.5)';
+      player.ctx.fillText('score ' + player.score, 5, 30);
+    }
+
+    function checkScore(player, row) {
+      player.score += row;
+      if (player.score > 15) {
+        newGame(player, player.level + 1);
+      }
+    }
+
+    function isRowFull(player) {
+      var result = 0;
+      var row = emptyRow();
+      for (var i = 0; i < height; i++) {
+        if (player.map[ i ].indexOf(0) === -1) {
+          result++;
+          player.map.splice(i, 1);
+          player.map.unshift(row);
+        }
+      }
+      checkScore(player, result);
+    }
+
+    function emptyRow() {
+      var row = [];
+      for (var i = 0; i < width; i++) {
+        row.push(0);
+      }
+      return row;
+    }
+
+    function returnDefaultInfo() {
+      return {
+        map: [],
+        dropSto: null,
+        canvas: null,
+        ctx: null,
+        score: 0,
+        level: 1,
+        horizon: 0,
+        vertical: 0,
+        rotate: 0,
+        arrayGroup: 0,
+        array: 0,
+        speed: 1,
+        random: 1,
+      };
+    }
+
+    function makePlayGround() {
+      player.push(returnDefaultInfo());
+    }
+
+  }());
+
+
+</script>
+
+<canvas id="canvas1"></canvas>
+<canvas id="canvas2"></canvas>
+
 </body>
+
 
 </html>
