@@ -196,7 +196,8 @@
       };
       var nextDown = function(_player) {
         if (isFloor(_player)) {
-          _player.vertical += 1;
+        clearTimeout(_player.dropSto);
+        intervalShape(_player);
         }
       };
       var turnRight = function(_player) {
@@ -436,7 +437,7 @@
     }
 
     function architect(_player) {
-      if (_player.vertical <= _player.array.length) {
+      if (_player.vertical < _player.array.length) {
         clearTimeout(_player.dropSto);
         if (confirm('다시시작하시겠습니까?')) {
           newGame(_player, localStorage.uiTetrisLevel === undefined ? 1 : localStorage.uiTetrisLevel);
