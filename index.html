@@ -1,6 +1,7 @@
 <!doctype html>
 
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport"
@@ -9,7 +10,8 @@
   <title>uiwwsw's tetris</title>
 
   <style>
-    html, body {
+    html,
+    body {
       width: 100%;
       height: 100%;
       margin: 0;
@@ -21,6 +23,10 @@
       background: #000;
     }
 
+    body {
+      width: calc(100% + 1px);
+    }
+
     body:before {
       display: inline-block;
       height: 100%;
@@ -28,7 +34,16 @@
       content: '';
     }
 
+    button {
+      padding: 2vmin 4vmin;
+      font-size: 10vmin;
+      color: #000;
+      background: #fff;
+    }
+
     canvas {
+      z-index: 2;
+      position: relative;
       display: none;
       vertical-align: middle;
       border: 1px solid #fff;
@@ -38,504 +53,560 @@
       display: inline-block;
     }
 
-    canvas + canvas {
+    canvas+canvas {
       margin-left: 100px;
     }
   </style>
 </head>
+
 <body>
-<script>
-  function uiTetris() {
-    var pixel = 25,
-      width = 10,
-      height = 20,
-      score = 15,
-      player = [],
-      colors = [ 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'violet' ],
-      shape = {
-        a: [
-          [
-            [ 1, 1, 1 ],
-            [ 0, 0, 1 ],
+  <script>
+    function uiTetris() {
+      'use strict';
+      var pixel = 25,
+        width = 10,
+        height = 20,
+        score = 15,
+        player = [],
+        colors = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'violet'],
+        shape = {
+          a: [
+            [
+              [1, 1, 1],
+              [0, 0, 1],
+            ],
+            [
+              [0, 1],
+              [0, 1],
+              [1, 1],
+            ],
+            [
+              [1, 0, 0],
+              [1, 1, 1],
+            ],
+            [
+              [1, 1],
+              [1, 0],
+              [1, 0],
+            ],
           ],
-          [
-            [ 0, 1 ],
-            [ 0, 1 ],
-            [ 1, 1 ],
+          b: [
+            [
+              [0, 1, 0],
+              [1, 1, 1],
+            ],
+            [
+              [1, 0],
+              [1, 1],
+              [1, 0],
+            ],
+            [
+              [1, 1, 1],
+              [0, 1, 0],
+            ],
+            [
+              [0, 1],
+              [1, 1],
+              [0, 1],
+            ],
           ],
-          [
-            [ 1, 0, 0 ],
-            [ 1, 1, 1 ],
+          c: [
+            [
+              [1, 1, 1],
+              [1, 0, 0],
+            ],
+            [
+              [1, 1],
+              [0, 1],
+              [0, 1],
+            ],
+            [
+              [0, 0, 1],
+              [1, 1, 1],
+            ],
+            [
+              [1, 0],
+              [1, 0],
+              [1, 1],
+            ],
           ],
-          [
-            [ 1, 1 ],
-            [ 1, 0 ],
-            [ 1, 0 ],
+          d: [
+            [
+              [1, 1, 0],
+              [0, 1, 1],
+            ],
+            [
+              [0, 1],
+              [1, 1],
+              [1, 0],
+            ],
           ],
-        ],
-        b: [
-          [
-            [ 0, 1, 0 ],
-            [ 1, 1, 1 ],
+          e: [
+            [
+              [1, 1],
+              [1, 1],
+            ],
           ],
-          [
-            [ 1, 0 ],
-            [ 1, 1 ],
-            [ 1, 0 ],
+          f: [
+            [
+              [0, 1, 1],
+              [1, 1, 0],
+            ],
+            [
+              [1, 0],
+              [1, 1],
+              [0, 1],
+            ],
           ],
-          [
-            [ 1, 1, 1 ],
-            [ 0, 1, 0 ],
+          g: [
+            [
+              [1, 1, 1, 1],
+            ],
+            [
+              [1],
+              [1],
+              [1],
+              [1],
+            ],
           ],
-          [
-            [ 0, 1 ],
-            [ 1, 1 ],
-            [ 0, 1 ],
-          ],
-        ],
-        c: [
-          [
-            [ 1, 1, 1 ],
-            [ 1, 0, 0 ],
-          ],
-          [
-            [ 1, 1 ],
-            [ 0, 1 ],
-            [ 0, 1 ],
-          ],
-          [
-            [ 0, 0, 1 ],
-            [ 1, 1, 1 ],
-          ],
-          [
-            [ 1, 0 ],
-            [ 1, 0 ],
-            [ 1, 1 ],
-          ],
-        ],
-        d: [
-          [
-            [ 1, 1, 0 ],
-            [ 0, 1, 1 ],
-          ],
-          [
-            [ 0, 1 ],
-            [ 1, 1 ],
-            [ 1, 0 ],
-          ],
-        ],
-        e: [
-          [
-            [ 1, 1 ],
-            [ 1, 1 ],
-          ],
-        ],
-        f: [
-          [
-            [ 0, 1, 1 ],
-            [ 1, 1, 0 ],
-          ],
-          [
-            [ 1, 0 ],
-            [ 1, 1 ],
-            [ 0, 1 ],
-          ],
-        ],
-        g: [
-          [
-            [ 1, 1, 1, 1 ],
-          ],
-          [
-            [ 1 ],
-            [ 1 ],
-            [ 1 ],
-            [ 1 ],
-          ],
-        ],
-      };
-    var playerNumber = (function ask() {
-      var n = prompt('플레이할 인원을 숫자로 적어주세요. 1 or 2');
-      return isNaN(n) || +n > 2 || +n < 1 ? ask() : n;
-    }());
-    tetris(playerNumber);
+        };
+      var playerNumber = (function ask() {
+        var n = prompt('플레이할 인원을 숫자로 적어주세요. 1 or 2');
+        return isNaN(n) || +n > 2 || +n < 1 ? ask() : n;
+      }());
+      tetris(playerNumber);
 
-    function tetris(players) {
-      for (var i = 0; i < players; i++) {
-        makePlayGround();
-        player[ i ].canvas = document.getElementById('canvas' + Number(i + 1));
-        player[ i ].ctx = player[ i ].canvas.getContext('2d');
-        player[ i ].canvas.setAttribute('width', width * pixel);
-        player[ i ].canvas.setAttribute('height', height * pixel);
-        newGame(player[ i ], localStorage.uiTetrisLevel === undefined ? 1 : localStorage.uiTetrisLevel);
-      }
-      var checkCommonTurn = function(_player, rotate) {
-        if (isRotate(_player, rotate) === false) {
-          return false;
+      function tetris(players) {
+        for (var i = 0; i < players; i++) {
+          makePlayGround();
+          player[i].canvas = document.getElementById('canvas' + Number(i + 1));
+          player[i].ctx = player[i].canvas.getContext('2d');
+          player[i].canvas.setAttribute('width', width * pixel);
+          player[i].canvas.setAttribute('height', height * pixel);
+          newGame(player[i], localStorage.uiTetrisLevel === undefined ? 1 : localStorage.uiTetrisLevel);
         }
-        return true;
-      };
-      var commonTurn = function(_player) {
-        if (_player.rotate >= _player.arrayGroup.length) {
-          _player.rotate = 0;
-        }
-        if (_player.rotate < 0) {
-          _player.rotate = _player.arrayGroup.length - 1;
-        }
-
-        _player.array = _player.arrayGroup[ _player.rotate ];
-      };
-      var nextRight = function(_player) {
-        if (isWall(_player, true)) {
-          _player.horizon += 1;
-        }
-      };
-      var nextLeft = function(_player) {
-        if (isWall(_player, false)) {
-          _player.horizon -= 1;
-        }
-      };
-      var nextDown = function(_player) {
-        if (isFloor(_player)) {
-        clearTimeout(_player.dropSto);
-        intervalShape(_player);
-        }
-      };
-      var turnRight = function(_player) {
-        if (checkCommonTurn(_player, 'right')) {
-          _player.rotate += 1;
-          commonTurn(_player);
-        }
-      };
-      var turnLeft = function(_player) {
-        if (checkCommonTurn(_player, 'left')) {
-          _player.rotate -= 1;
-          commonTurn(_player);
-        }
-      };
-      window.addEventListener('keydown', function(event) {
-        var player1 = (function(players) {
-          //wdsa
-          switch (event.key) {
-            case 'd':
-              nextRight(player[ 0 ]);
-              break;
-            case 's':
-              nextDown(player[ 0 ]);
-              break;
-            case 'a':
-              nextLeft(player[ 0 ]);
-              break;
-            case 'e': // turn right
-              turnRight(player[ 0 ]);
-              break;
-            case 'q': // turn left
-              turnLeft(player[ 0 ]);
-              break;
-          }
-          moveShape(player[ 0 ]);
-        }(players));
-        var player2 = (function(players) {
-          if (players < 2) {
+        var checkCommonTurn = function (_player, rotate) {
+          if (isRotate(_player, rotate) === false) {
             return false;
           }
-          //8654
-          switch (event.key) {
-            case '6':
-              nextRight(player[ 1 ]);
-              break;
-            case '5':
-              nextDown(player[ 1 ]);
-              break;
-            case '4':
-              nextLeft(player[ 1 ]);
-              break;
-            case '9': // turn right
-              turnRight(player[ 1 ]);
-              break;
-            case '7': // turn left
-              turnLeft(player[ 1 ]);
-              break;
+          return true;
+        };
+        var commonTurn = function (_player) {
+          if (_player.rotate >= _player.arrayGroup.length) {
+            _player.rotate = 0;
           }
-          moveShape(player[ 1 ]);
-        }(players));
-
-        // left 97
-        // up 119
-        // right 100
-        // bottom 115
-      });
-      //if ( === 1) {
-      //  player1();
-      //} else {
-      //  player1();
-      //  player2();
-      //}
-    }
-
-    function newGame(_player, level) {
-      clearTimeout(_player.dropSto);
-      _player.map = [];
-      _player.level = level;
-      for (var i = 0; i < height; i++) {
-        var _row = [];
-        for (var j = 0; j < width; j++) {
-          _row.push(0);
-        }
-        _player.map.push(_row);
-      }
-      makeSomeTrouble(_player, level);
-      makeShape(_player);
-    }
-
-    function setMap(_player) {
-      for (var i = 0; i < _player.map.length; i++) {
-        for (var j = 0; j < _player.map[ i ].length; j++) {
-          var color = _player.map[ i ][ j ] ? _player.map[ i ][ j ] : '#000';
-          _player.ctx.beginPath();
-          _player.ctx.rect(j * pixel, i * pixel, pixel, pixel);
-          if (color !== 0) {
-            _player.ctx.fillStyle = color;
-            _player.ctx.fill();
-            displayPlayerInfo(_player);
+          if (_player.rotate < 0) {
+            _player.rotate = _player.arrayGroup.length - 1;
           }
-        }
-      }
-    }
-
-    function makeSomeTrouble(_player, level) {
-      var row = Math.ceil(level / width * 2);
-      level = (level % width) === 0 ? 1 : (level % width);
-      for (var j = 0; j < row; j++) {
-        var randomBase = [];
-        for (var i = 0; i < width; i++) {
-          randomBase.push(0);
-        }
-        for (var i = 0; i < level; i++) {
-          randomBase.splice(Math.floor(Math.random() * width + 1) - 1, 1, colors[ Math.floor(Math.random() * 7 + 1) - 1 ]);
-        }
-        _player.map.shift();
-        _player.map.push(randomBase);
-      }
-      setMap(_player);
-    }
-
-    function moveShape(_player) {
-      setMap(_player);
-      _player.ctx.beginPath();
-      for (var i = 0; i < _player.array.length; i++) {
-        for (var j = 0; j < _player.array[ i ].length; j++) {
-          if (_player.array[ i ][ j ] === 1) {
-            _player.ctx.rect((j + _player.horizon) * pixel, (i + _player.vertical) * pixel, pixel, pixel);
+          _player.array = _player.arrayGroup[_player.rotate];
+        };
+        var nextRight = function (_player) {
+          if (isWall(_player, true)) {
+            _player.horizon += 1;
           }
-        }
-      }
-      _player.ctx.fillStyle = colors[ _player.random ];
-      _player.ctx.fill();
-    }
-
-    function intervalShape(_player) {
-      var _speed = 1000 - (_player.level * 100);
-      var speed = _speed < 300 ? 300 : _speed;
-      _player.vertical++;
-      moveShape(_player);
-      _player.dropSto = setTimeout(function() {
-        if (isFloor(_player)) {
-          intervalShape(_player);
-        } else {
-          architect(_player);
-          makeShape(_player);
-        }
-      }, speed);
-    }
-
-    function isFloor(_player) {
-      var result = [];
-      var row = Number(_player.array.length);
-      if (_player.vertical + row >= height) {
-        return false;
-      }
-      for (var i = 0; i < _player.array[ 0 ].length; i++) {
-        for (var j = 0; j < row; j++) {
-          var color = _player.map[ _player.vertical + _player.array.length - j ][ _player.horizon + i ];
-          var check = _player.array[ row - j - 1 ][ i ] === 1 ? color : 0;
-          result.push(check);
-        }
-      }
-      return result.filter((color) => {return color !== 0;}).length === 0;
-    }
-
-    function isWall(_player, direct) {
-      var result = [];
-      var col = Number(_player.array[ 0 ].length);
-      direct = direct ? 1 : -1;
-      if (direct && _player.horizon + direct + col > width) {
-        return false;
-      }
-      if (!direct && _player.horizon + direct < 0) {
-        return false;
-      }
-      for (var i = 0; i < _player.array.length; i++) {
-        for (var j = 0; j < col; j++) {
-          var color = _player.map[ _player.vertical + i ][ _player.horizon + j + direct ];
-          var check = _player.array[ i ][ j ] === 1 ? color : 0;
-          result.push(check);
-        }
-      }
-      return result.filter((color) => {return color !== 0;}).length === 0;
-    }
-
-    function isRotate(_player, rotate) {
-      switch (rotate) {
-        case 'left':
-          if (_player.rotate === 0) {
-            rotate = _player.arrayGroup.length - 1;
-          } else {
-            rotate = _player.rotate - 1;
+        };
+        var nextLeft = function (_player) {
+          if (isWall(_player, false)) {
+            _player.horizon -= 1;
           }
-          break;
-        case 'right':
-          if (_player.rotate === _player.arrayGroup.length - 1) {
-            rotate = 0;
-          } else {
-            rotate = _player.rotate + 1;
+        };
+        var nextDown = function (_player) {
+          if (isFloor(_player)) {
+            clearTimeout(_player.dropSto);
+            intervalShape(_player);
           }
-          break;
-      }
-      var _array = _player.arrayGroup[ rotate ];
-      var col = Number(_array[ 0 ].length);
-      var row = Number(_array.length);
-      for (var i = 0; i < col; i++) {
-        if (_player.vertical + row - 1 >= height) {
-          return false;
-        }
-        if (_array[ row - 1 ][ i ] === 1 && _player.map[ _player.vertical + row - 1 ][ _player.horizon + i ] !== 0) {
-          return false;
-        }
-      }
-      for (var i = 0; i < row; i++) {
-        if (_array[ i ][ 0 ] === 1 && _player.map[ _player.vertical + i ][ _player.horizon ] !== 0) {
-          return false;
-        }
-        if (_array[ i ][ col - 1 ] === 1 && _player.map[ _player.vertical + i ][ _player.horizon + col - 1 ] !== 0) {
-          return false;
-        }
+        };
+        var turnRight = function (_player) {
+          if (checkCommonTurn(_player, 'right')) {
+            _player.rotate += 1;
+            commonTurn(_player);
+          }
+        };
+        var turnLeft = function (_player) {
+          if (checkCommonTurn(_player, 'left')) {
+            _player.rotate -= 1;
+            commonTurn(_player);
+          }
+        };
+        window.addEventListener('touchstart', function (event) {
+          var _player = player[Number(event.target.dataset.index)];
+          _player.touchStartX = event.touches[0].pageX;
+          _player.touchStartY = event.touches[0].pageY;
+          _player.touchRotate = true;
+        });
+        window.addEventListener('touchmove', function (event) {
+          var _player = player[Number(event.target.dataset.index)];
+          var x = (_player.touchStartX || 0) - event.touches[0].pageX;
+          var y = (_player.touchStartY || 0) - event.touches[0].pageY;
+
+          if (x > pixel * 3) {
+            nextLeft(_player);
+            _player.touchRotate = false;
+            _player.touchStartX = event.touches[0].pageX;
+            moveShape(_player);
+            return false;
+          }
+          if (x < -pixel * 3) {
+            nextRight(_player);
+            _player.touchRotate = false;
+            _player.touchStartX = event.touches[0].pageX;
+            moveShape(_player);
+            return false;
+          }
+          if (y < -pixel * 3) {
+            nextDown(_player);
+            _player.touchRotate = false;
+            moveShape(_player);
+            return false;
+          }
+        });
+        window.addEventListener('touchend', function (event) {
+          var _player = player[Number(event.target.dataset.index)];
+          if (_player.touchRotate) {
+            turnRight(_player);
+            moveShape(_player);
+          }
+        });
+        window.addEventListener('keydown', function (event) {
+          var player1 = (function () {
+            //wdsa
+            switch (event.key) {
+              case 'd':
+                nextRight(player[0]);
+                break;
+              case 's':
+                nextDown(player[0]);
+                break;
+              case 'a':
+                nextLeft(player[0]);
+                break;
+              case 'e': // turn right
+                turnRight(player[0]);
+                break;
+              case 'q': // turn left
+                turnLeft(player[0]);
+                break;
+            }
+            moveShape(player[0]);
+          }());
+          var player2 = (function (players) {
+            if (players < 2) {
+              return false;
+            }
+            //8654
+            switch (event.key) {
+              case '6':
+                nextRight(player[1]);
+                break;
+              case '5':
+                nextDown(player[1]);
+                break;
+              case '4':
+                nextLeft(player[1]);
+                break;
+              case '9': // turn right
+                turnRight(player[1]);
+                break;
+              case '7': // turn left
+                turnLeft(player[1]);
+                break;
+            }
+            moveShape(player[1]);
+          }(players));
+          // left 97
+          // up 119
+          // right 100
+          // bottom 115
+        });
+        //if ( === 1) {
+        //  player1();
+        //} else {
+        //  player1();
+        //  player2();
+        //}
       }
 
-      return true;
-    }
-
-    function makeShape(_player) {
-      _player.vertical = -1;
-      _player.random = Math.floor(Math.random() * 7 + 1) - 1;
-      _player.rotate = 0;
-      _player.arrayGroup = Object.values(shape)[ _player.random ];
-      _player.array = _player.arrayGroup[ _player.rotate ];
-      _player.horizon = (5 - Math.floor(_player.array[ 0 ].length / 2));
-      moveShape(_player);
-      clearTimeout(_player.dropSto);
-      intervalShape(_player);
-    }
-
-    function architect(_player) {
-      if (_player.vertical < _player.array.length) {
+      function newGame(_player, level) {
         clearTimeout(_player.dropSto);
-        if (confirm('다시시작하시겠습니까?')) {
-          newGame(_player, localStorage.uiTetrisLevel === undefined ? 1 : localStorage.uiTetrisLevel);
+        _player.map = [];
+        _player.level = level;
+        for (var i = 0; i < height; i++) {
+          var _row = [];
+          for (var j = 0; j < width; j++) {
+            _row.push(0);
+          }
+          _player.map.push(_row);
         }
-        return false;
-
+        makeSomeTrouble(_player, level);
+        makeShape(_player);
       }
-      var color = colors[ _player.random ];
-      for (var i = 0; i < _player.array.length; i++) {
-        for (var j = 0; j < _player.array[ i ].length; j++) {
-          if (_player.array[ i ][ j ] === 1) {
-            _player.map[ _player.vertical + i ].splice((j + _player.horizon), 1, color);
+
+      function drawBoard(_player) {
+        _player.ctx.strokeStyle = 'rgba(255,255,255,.5)';
+        _player.ctx.lineWidth = 1;
+        _player.ctx.stroke();
+      }
+
+      function setMap(_player) {
+        for (var i = 0; i < _player.map.length; i++) {
+          for (var j = 0; j < _player.map[i].length; j++) {
+            var color = _player.map[i][j] ? _player.map[i][j] : '#000';
+            _player.ctx.beginPath();
+            _player.ctx.rect(j * pixel, i * pixel, pixel, pixel);
+            if (color !== 0) {
+              _player.ctx.fillStyle = color;
+              _player.ctx.fill();
+              drawBoard(_player);
+              displayPlayerInfo(_player);
+            }
           }
         }
       }
-      isRowFull(_player);
-    }
 
-    function displayPlayerInfo(_player) {
-      var _score = score + Number(_player.level) - 1;
-      _player.ctx.font = '12px Arial';
-      _player.ctx.fillStyle = 'rgba(255,255,255,.5)';
-      _player.ctx.fillText('level ' + _player.level, 5, 15);
-      _player.ctx.font = '12px Arial';
-      _player.ctx.fillStyle = 'rgba(255,255,255,.5)';
-      _player.ctx.fillText('score ' + _player.score + '/' + _score, 5, 30);
-    }
+      function makeSomeTrouble(_player, level) {
+        var row = Math.ceil(level / width * 2);
+        level = (level % width) === 0 ? 1 : (level % width);
+        for (var j = 0; j < row; j++) {
+          var _index = Math.floor(Math.random() * width + 1) - 1;
+          var randomBase = [];
+          for (var i = 0; i < width; i++) {
+            randomBase.push(0);
+          }
+          for (var i = 0; i < level; i++) {
+            while (randomBase[_index] !== 0) {
+              _index = Math.floor(Math.random() * width + 1) - 1;
+            }
+            randomBase.splice(_index, 1, colors[Math.floor(Math.random() * 7 + 1) - 1]);
+          }
+          _player.map.shift();
+          _player.map.push(randomBase);
+        }
+        setMap(_player);
+      }
 
-    function checkScore(_player, row) {
-      if (row === 0) {
-        return false;
+      function moveShape(_player) {
+        setMap(_player);
+        _player.ctx.beginPath();
+        for (var i = 0; i < _player.array.length; i++) {
+          for (var j = 0; j < _player.array[i].length; j++) {
+            if (_player.array[i][j] === 1) {
+              _player.ctx.rect((j + _player.horizon) * pixel, (i + _player.vertical) * pixel, pixel, pixel);
+            }
+          }
+        }
+        _player.ctx.fillStyle = colors[_player.random];
+        _player.ctx.fill();
+        drawBoard(_player);
       }
-      var _score = score + Number(_player.level) - 1;
-      _player.score += Math.pow(row, row);
-      if (playerNumber == 2) {
-        var me = Number(_player.canvas.dataset.index) === 0 ? 1 : 0;
-        makeSomeTrouble(player[ me ], row * _player.level);
-      }
-      if (_player.score >= _score) {
-        _player.score = 0;
-        _player.level = Number(_player.level) + 1;
-        localStorage.uiTetrisLevel = _player.level;
-        newGame(_player, _player.level);
-      }
-    }
 
-    function isRowFull(_player) {
-      var result = 0;
-      var row = emptyRow();
-      for (var i = 0; i < height; i++) {
-        if (_player.map[ i ].indexOf(0) === -1) {
-          result++;
-          _player.map.splice(i, 1);
-          _player.map.unshift(row);
+      function intervalShape(_player) {
+        var _speed = 1000 - (_player.level * 100);
+        var speed = _speed < 300 ? 300 : _speed;
+        _player.vertical++;
+        moveShape(_player);
+        _player.dropSto = setTimeout(function () {
+          if (isFloor(_player)) {
+            intervalShape(_player);
+          } else {
+            architect(_player);
+            makeShape(_player);
+          }
+        }, speed);
+      }
+
+      function isFloor(_player) {
+        var result = [];
+        var row = Number(_player.array.length);
+        if (_player.vertical + row >= height) {
+          return false;
+        }
+        for (var i = 0; i < _player.array[0].length; i++) {
+          for (var j = 0; j < row; j++) {
+            var color = _player.map[_player.vertical + _player.array.length - j][_player.horizon + i];
+            var check = _player.array[row - j - 1][i] === 1 ? color : 0;
+            result.push(check);
+          }
+        }
+        return result.filter((color) => {
+          return color !== 0;
+        }).length === 0;
+      }
+
+      function isWall(_player, direct) {
+        var result = [];
+        var col = Number(_player.array[0].length);
+        direct = direct ? 1 : -1;
+        if (direct && _player.horizon + direct + col > width) {
+          return false;
+        }
+        if (!direct && _player.horizon + direct < 0) {
+          return false;
+        }
+        for (var i = 0; i < _player.array.length; i++) {
+          for (var j = 0; j < col; j++) {
+            var color = _player.map[_player.vertical + i][_player.horizon + j + direct];
+            var check = _player.array[i][j] === 1 ? color : 0;
+            result.push(check);
+          }
+        }
+        return result.filter((color) => {
+          return color !== 0;
+        }).length === 0;
+      }
+
+      function isRotate(_player, rotate) {
+        switch (rotate) {
+          case 'left':
+            if (_player.rotate === 0) {
+              rotate = _player.arrayGroup.length - 1;
+            } else {
+              rotate = _player.rotate - 1;
+            }
+            break;
+          case 'right':
+            if (_player.rotate === _player.arrayGroup.length - 1) {
+              rotate = 0;
+            } else {
+              rotate = _player.rotate + 1;
+            }
+            break;
+        }
+        var _array = _player.arrayGroup[rotate];
+        var col = Number(_array[0].length);
+        var row = Number(_array.length);
+        for (var i = 0; i < col; i++) {
+          if (_player.vertical + row - 1 >= height) {
+            return false;
+          }
+          if (_array[row - 1][i] === 1 && _player.map[_player.vertical + row - 1][_player.horizon + i] !== 0) {
+            return false;
+          }
+        }
+        for (var i = 0; i < row; i++) {
+          if (_array[i][0] === 1 && _player.map[_player.vertical + i][_player.horizon] !== 0) {
+            return false;
+          }
+          if (_array[i][col - 1] === 1 && _player.map[_player.vertical + i][_player.horizon + col - 1] !== 0) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      function makeShape(_player) {
+        _player.vertical = -1;
+        _player.random = Math.floor(Math.random() * 7 + 1) - 1;
+        _player.rotate = 0;
+        _player.arrayGroup = Object.values(shape)[_player.random];
+        _player.array = _player.arrayGroup[_player.rotate];
+        _player.horizon = (5 - Math.floor(_player.array[0].length / 2));
+        moveShape(_player);
+        clearTimeout(_player.dropSto);
+        intervalShape(_player);
+      }
+
+      function architect(_player) {
+        if (_player.vertical === 0) {
+          clearTimeout(_player.dropSto);
+          if (confirm('다시시작하시겠습니까?')) {
+            newGame(_player, localStorage.uiTetrisLevel === undefined ? 1 : localStorage.uiTetrisLevel);
+          }
+          return false;
+        }
+        var color = colors[_player.random];
+        for (var i = 0; i < _player.array.length; i++) {
+          for (var j = 0; j < _player.array[i].length; j++) {
+            if (_player.array[i][j] === 1) {
+              _player.map[_player.vertical + i].splice((j + _player.horizon), 1, color);
+            }
+          }
+        }
+        isRowFull(_player);
+      }
+
+      function displayPlayerInfo(_player) {
+        var _score = score + Number(_player.level) - 1;
+        _player.ctx.font = '12px Arial';
+        _player.ctx.fillStyle = 'rgba(255,255,255,.5)';
+        _player.ctx.fillText('level ' + _player.level, 5, 15);
+        _player.ctx.font = '12px Arial';
+        _player.ctx.fillStyle = 'rgba(255,255,255,.5)';
+        _player.ctx.fillText('score ' + _player.score + '/' + _score, 5, 30);
+      }
+
+      function checkScore(_player, row) {
+        if (row === 0) {
+          return false;
+        }
+        var _score = score + Number(_player.level) - 1;
+        _player.score += Math.pow(row, row);
+        if (playerNumber == 2) {
+          var me = Number(_player.canvas.dataset.index) === 0 ? 1 : 0;
+          makeSomeTrouble(player[me], row * _player.level);
+        }
+        if (_player.score >= _score) {
+          _player.score = 0;
+          _player.level = Number(_player.level) + 1;
+          localStorage.uiTetrisLevel = _player.level;
+          newGame(_player, _player.level);
         }
       }
-      checkScore(_player, result);
-    }
 
-    function emptyRow() {
-      var row = [];
-      for (var i = 0; i < width; i++) {
-        row.push(0);
+      function isRowFull(_player) {
+        var result = 0;
+        var row = emptyRow();
+        for (var i = 0; i < height; i++) {
+          if (_player.map[i].indexOf(0) === -1) {
+            result++;
+            _player.map.splice(i, 1);
+            _player.map.unshift(row);
+          }
+        }
+        checkScore(_player, result);
       }
-      return row;
-    }
 
-    function returnDefaultInfo() {
-      return {
-        map: [],
-        dropSto: null,
-        canvas: null,
-        ctx: null,
-        score: 0,
-        level: 1,
-        horizon: 0,
-        vertical: 0,
-        rotate: 0,
-        arrayGroup: 0,
-        array: 0,
-        random: 1,
-      };
-    }
+      function emptyRow() {
+        var row = [];
+        for (var i = 0; i < width; i++) {
+          row.push(0);
+        }
+        return row;
+      }
 
-    function makePlayGround() {
-      player.push(returnDefaultInfo());
-    }
-  };
-  window.onload = function() {
-    document.getElementById('startBtn').addEventListener('click', function() {
-      this.remove();
-      uiTetris();
-    });
-  };
-</script>
-<button id="startBtn">스타트</button>
-<canvas id="canvas1" data-index="0"></canvas>
-<canvas id="canvas2" data-index="1"></canvas>
+      function returnDefaultInfo() {
+        return {
+          map: [],
+          dropSto: null,
+          canvas: null,
+          ctx: null,
+          score: 0,
+          level: 1,
+          touchRotate: null,
+          touchStartX: null,
+          touchStartY: null,
+          horizon: 0,
+          vertical: 0,
+          rotate: 0,
+          arrayGroup: 0,
+          array: 0,
+          random: 1,
+        };
+      }
+
+      function makePlayGround() {
+        player.push(returnDefaultInfo());
+      }
+    };
+    window.onload = function () {
+      document.getElementById('startBtn').addEventListener('click', function () {
+        this.remove();
+        uiTetris();
+      });
+    };
+  </script>
+  <button id="startBtn">스타트</button>
+  <canvas id="canvas1" data-index="0"></canvas>
+  <canvas id="canvas2" data-index="1"></canvas>
 
 </body>
 
